@@ -40,7 +40,8 @@ struct IslandLayoutTests {
         let island = IslandLayout(containerWidth: 390, safeAreaTop: 59, style: .dynamicIsland)
 
         #expect(notch.collapsedSize == island.collapsedSize)
-        #expect(notch.expandedSize.height == island.expandedSize.height)
+        #expect(notch.expandedSize.height == 84)
+        #expect(island.expandedSize.height == 120)
         #expect(notch.cornerRadius(for: .expanded) == island.cornerRadius(for: .expanded))
         #expect(notch.topOffset == 47)
         #expect(homeButton.topOffset == 20)
@@ -55,7 +56,7 @@ struct IslandLayoutTests {
         let mac = IslandLayout(containerWidth: 1280, safeAreaTop: 0, style: .statusBar)
         let phone = IslandLayout(containerWidth: 402, safeAreaTop: 59, style: .dynamicIsland)
 
-        #expect(ipad.expandedSize == CGSize(width: 420, height: 120))
+        #expect(ipad.expandedSize == CGSize(width: 420, height: 84))
         #expect(tv.expandedSize == ipad.expandedSize)
         #expect(mac.expandedSize == ipad.expandedSize)
         #expect(ipad.collapsedSize == phone.collapsedSize)

@@ -107,18 +107,7 @@ struct IslandToastCard: View {
         .padding(.horizontal, 28)
         .padding(.vertical, 24)
         .frame(width: layout.bannerWidth, alignment: .leading)
-        .background {
-            RoundedRectangle(cornerRadius: layout.cornerRadius(for: .expanded), style: .continuous)
-                #if os(macOS)
-                    .fill(Color.black.opacity(0.92))
-                #else
-                    .fill(.ultraThickMaterial)
-                #endif
-                .overlay {
-                    RoundedRectangle(cornerRadius: layout.cornerRadius(for: .expanded), style: .continuous)
-                        .strokeBorder(.white.opacity(0.14), lineWidth: 1)
-                }
-        }
+        .toastGlass(in: RoundedRectangle(cornerRadius: layout.cornerRadius(for: .expanded), style: .continuous))
         .shadow(color: .black.opacity(0.35), radius: 24, y: 10)
         .offset(x: shown || reduceMotion ? 0 : layout.bannerWidth + layout.bannerTrailingInset)
         .opacity(shown ? 1 : 0)
@@ -226,7 +215,7 @@ struct IslandToastLabel: View {
         .frame(
             maxWidth: .infinity,
             maxHeight: .infinity,
-            alignment: showsDetail ? .topLeading : .center
+            alignment: showsDetail && contentTopInset > 0 ? .topLeading : .center
         )
     }
 }
@@ -268,6 +257,19 @@ struct IslandToastSymbol: View {
             .font(.system(size: pointSize))
             .foregroundStyle(.white, tone.secondary)
             .symbolEffect(.wiggle, options: .default.speed(1.5), value: wiggles)
+    }
+}
+
+extension View {
+    /// Dark liquid glass on OS 26 and later. Older systems keep a dark plate
+    /// so the banner does not turn into a bright material.
+    @ViewBuilder
+    func toastGlass(in shape: some Shape) -> some View {
+        if #available(iOS 26, macOS 26, tvOS 26, *) {
+            glassEffect(.regular.tint(.black.opacity(0.45)), in: shape)
+        } else {
+            background(shape.fill(Color.black.opacity(0.78)))
+        }
     }
 }
 

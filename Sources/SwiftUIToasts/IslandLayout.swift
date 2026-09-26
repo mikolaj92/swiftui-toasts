@@ -37,6 +37,8 @@ struct IslandLayout: Equatable {
     static let referenceSafeAreaTop: CGFloat = 59
     /// Tall enough that the title sits under the cutout, not in it.
     static let expandedHeight: CGFloat = 120
+    /// iPad and notch phones have no cutout to clear, so the card hugs the text.
+    static let statusBarExpandedHeight: CGFloat = 84
     static let expandedContentGap: CGFloat = 6
     static let expandedHorizontalInset: CGFloat = 10
     static let expandedCornerRadius: CGFloat = 38
@@ -81,7 +83,8 @@ struct IslandLayout: Equatable {
         let width = containerWidth > Self.phoneWidthCeiling
             ? min(edgeToEdge, Self.regularExpandedWidth)
             : max(edgeToEdge, collapsedSize.width)
-        return CGSize(width: width, height: Self.expandedHeight)
+        let height = style == .statusBar ? Self.statusBarExpandedHeight : Self.expandedHeight
+        return CGSize(width: width, height: height)
     }
 
     /// Where the title starts inside the expanded card. On an island phone
@@ -91,7 +94,7 @@ struct IslandLayout: Equatable {
         case .dynamicIsland:
             max(Self.islandHeight, safeAreaTop - topOffset) + Self.expandedContentGap
         case .statusBar:
-            14
+            0
         case .banner:
             0
         }
