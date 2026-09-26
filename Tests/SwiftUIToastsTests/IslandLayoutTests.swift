@@ -15,8 +15,9 @@ struct IslandLayoutTests {
         )
 
         #expect(layout.topOffset == 11)
+        #expect(layout.expandedContentTop == 54)
         #expect(layout.collapsedSize == CGSize(width: 120, height: 36))
-        #expect(layout.expandedSize == CGSize(width: 382, height: 90))
+        #expect(layout.expandedSize == CGSize(width: 382, height: 120))
         #expect(layout.cornerRadius(for: .expanded) == 38)
         #expect(layout.cornerRadius(for: .compact) == 18)
     }
@@ -54,7 +55,7 @@ struct IslandLayoutTests {
         let mac = IslandLayout(containerWidth: 1280, safeAreaTop: 0, style: .statusBar)
         let phone = IslandLayout(containerWidth: 402, safeAreaTop: 59, style: .dynamicIsland)
 
-        #expect(ipad.expandedSize == CGSize(width: 420, height: 90))
+        #expect(ipad.expandedSize == CGSize(width: 420, height: 120))
         #expect(tv.expandedSize == ipad.expandedSize)
         #expect(mac.expandedSize == ipad.expandedSize)
         #expect(ipad.collapsedSize == phone.collapsedSize)

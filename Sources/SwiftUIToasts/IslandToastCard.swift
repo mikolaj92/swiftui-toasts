@@ -57,7 +57,8 @@ struct IslandToastCard: View {
                 showsDetail: layout.detailOpacity(for: presentation) > 0,
                 tone: tone,
                 symbolName: symbolName,
-                iconURL: iconURL
+                iconURL: iconURL,
+                contentTopInset: layout.expandedContentTop
             )
             .frame(width: layout.expandedSize.width, height: layout.expandedSize.height)
             .scaleEffect(x: scale.width, y: scale.height)
@@ -114,6 +115,7 @@ struct IslandToastLabel: View {
     var tone: IslandToastTone
     var symbolName: String
     var iconURL: URL?
+    var contentTopInset: CGFloat
 
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
@@ -127,7 +129,7 @@ struct IslandToastLabel: View {
                 .opacity(showsDetail ? 1 : 0)
         }
         .padding(.horizontal, 14)
-        .padding(.top, showsDetail ? 36 : 0)
+        .padding(.top, showsDetail ? contentTopInset : 0)
         .frame(
             maxWidth: .infinity,
             maxHeight: .infinity,
