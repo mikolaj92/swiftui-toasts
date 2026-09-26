@@ -5,33 +5,24 @@ struct IslandToastOverlay: View {
 
     var body: some View {
         let toast = center.current
-        let overlay = GeometryReader { proxy in
-            IslandToastCard(
-                presentation: center.presentation,
-                title: toast?.title ?? "",
-                message: toast?.message ?? "",
-                tone: toast?.tone ?? .neutral,
-                symbolName: toast?.symbolName ?? "checkmark.seal.fill",
-                iconURL: toast?.iconURL,
-                animatesChanges: center.animatesChanges,
-                layout: layout(in: proxy)
-            )
-        }
-        .allowsHitTesting(false)
-        .focusable(false)
-        #if os(macOS)
-            overlay
-        #else
-            overlay.ignoresSafeArea()
-        #endif
+        IslandToastCard(
+            presentation: center.presentation,
+            title: toast?.title ?? "",
+            message: toast?.message ?? "",
+            tone: toast?.tone ?? .neutral,
+            symbolName: toast?.symbolName ?? "checkmark.seal.fill",
+            iconURL: toast?.iconURL,
+            animatesChanges: center.animatesChanges,
+            layout: layout
+        )
     }
 
-    private func layout(in proxy: GeometryProxy) -> IslandLayout {
+    private var layout: IslandLayout {
         var layout = IslandLayout(
-            containerWidth: proxy.size.width,
-            safeAreaTop: max(center.safeAreaTop, proxy.safeAreaInsets.top),
+            containerWidth: center.containerWidth,
+            safeAreaTop: center.safeAreaTop,
             style: chromeStyle(hasIsland: center.hasIslandHardware),
-            safeAreaTrailing: proxy.safeAreaInsets.trailing
+            safeAreaTrailing: center.safeAreaTrailing
         )
         #if os(macOS)
             layout.bannerWidthLimit = 380
@@ -41,6 +32,33 @@ struct IslandToastOverlay: View {
         return layout
     }
 
+}
+
+/// Measures the screen from behind the app, so the toast card in front never
+/// covers the focus engine.
+struct IslandToastScreenReader: View {
+    var center: IslandToastCenter
+
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear
+                .onAppear { note(proxy) }
+                .onChange(of: proxy.size) { _, _ in note(proxy) }
+        }
+        .ignoresSafeArea()
+    }
+
+    private func note(_ proxy: GeometryProxy) {
+        center.noteScreen(
+            safeAreaTop: proxy.safeAreaInsets.top,
+            hasIslandHardware: false,
+            safeAreaTrailing: proxy.safeAreaInsets.trailing,
+            containerWidth: proxy.size.width
+        )
+    }
+}
+
+private extension IslandToastOverlay {
     private func chromeStyle(hasIsland: Bool) -> IslandChromeStyle {
         #if os(tvOS) || os(macOS)
             return .banner
@@ -71,6 +89,7 @@ struct IslandToastCard: View {
             }
         }
         .accessibilityElement(children: .ignore)
+        .accessibilityIdentifier("island-toast")
         .accessibilityLabel(spoken)
         .accessibilityAddTraits(.isStaticText)
         .onChange(of: presentation) { _, presentation in
@@ -113,7 +132,6 @@ struct IslandToastCard: View {
         .opacity(shown ? 1 : 0)
         .padding(.top, layout.bannerTopInset)
         .padding(.trailing, layout.bannerTrailingInset)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .animation(bannerMotion, value: presentation)
         .focusable(false)
     }

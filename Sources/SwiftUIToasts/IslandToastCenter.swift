@@ -11,6 +11,8 @@ import SwiftUI
 public final class IslandToastCenter {
     private(set) var queue = IslandToastQueue()
     var safeAreaTop: CGFloat = 0
+    var safeAreaTrailing: CGFloat = 0
+    var containerWidth: CGFloat = 0
     var hasIslandHardware = false
     var animatesChanges = true
 
@@ -62,9 +64,20 @@ public final class IslandToastCenter {
         )
     }
 
-    func noteScreen(safeAreaTop: CGFloat, hasIslandHardware: Bool) {
+    func noteScreen(
+        safeAreaTop: CGFloat,
+        hasIslandHardware: Bool,
+        safeAreaTrailing: CGFloat = 0,
+        containerWidth: CGFloat = 0
+    ) {
         if self.safeAreaTop != safeAreaTop {
             self.safeAreaTop = safeAreaTop
+        }
+        if self.safeAreaTrailing != safeAreaTrailing {
+            self.safeAreaTrailing = safeAreaTrailing
+        }
+        if containerWidth > 0, self.containerWidth != containerWidth {
+            self.containerWidth = containerWidth
         }
         if self.hasIslandHardware != hasIslandHardware {
             self.hasIslandHardware = hasIslandHardware

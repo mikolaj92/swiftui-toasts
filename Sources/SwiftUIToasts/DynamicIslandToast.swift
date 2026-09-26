@@ -130,8 +130,15 @@ struct DynamicIslandToastsModifier: ViewModifier {
         #else
             content
                 .environment(center)
-                .overlay(alignment: .top) {
+                .background {
+                    IslandToastScreenReader(center: center)
+                        .allowsHitTesting(false)
+                        .focusable(false)
+                }
+                .overlay(alignment: .topTrailing) {
                     IslandToastOverlay(center: center)
+                        .allowsHitTesting(false)
+                        .focusable(false)
                 }
         #endif
     }
