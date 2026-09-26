@@ -1,0 +1,59 @@
+name: ToastDemo
+options:
+  bundleIdPrefix: dev.mikolaj.swiftuitoasts
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+packages:
+  SwiftUIToasts:
+    path: ../..
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGNING_REQUIRED: NO
+targets:
+  ToastDemo:
+    type: application
+    platform: iOS
+    sources:
+      - ToastDemo
+    dependencies:
+      - package: SwiftUIToasts
+      - target: ToastDemoWidget
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.mikolaj.swiftuitoasts.demo
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSSupportsLiveActivities: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+  ToastDemoWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - ToastDemoWidget
+    dependencies:
+      - package: SwiftUIToasts
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.mikolaj.swiftuitoasts.demo.widget
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: ToastDemoWidget/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: Toasts
+        SKIP_INSTALL: YES
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+schemes:
+  ToastDemo:
+    build:
+      targets:
+        ToastDemo: all
+        ToastDemoWidget: all
+    run:
+      config: Debug
