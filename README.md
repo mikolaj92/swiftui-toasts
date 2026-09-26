@@ -4,13 +4,13 @@ One modifier, then `show`. The queue, timing, and animation stay inside the libr
 
 On iPhone the toast is a system Live Activity when Live Activities are turned on and the app includes the widget below. Everywhere else, and whenever that request fails, the library draws the same card itself.
 
-The in-app card, on an iPhone 17 Pro. It opens under the status bar, then folds back to a symbol in the island.
+The in-app card, on an iPhone 17 Pro. It grows from the island, with the title up in that band, then folds back to the symbol.
 
-![Toast opening under the status bar and folding back into the island](docs/private-toast.gif)
+![Toast growing from the Dynamic Island](docs/private-toast.gif)
 
-| Expanded, under the status bar | Compact, symbol in the island |
+| Expanded from the island | Compact, symbol in the island |
 | --- | --- |
-| ![Expanded toast under the status bar](docs/private-expanded.png) | ![Compact symbol in the island](docs/private-compact.png) |
+| ![Expanded toast growing from the island](docs/private-expanded.png) | ![Compact symbol in the island](docs/private-compact.png) |
 
 ## Add the package
 
