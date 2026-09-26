@@ -72,7 +72,7 @@ struct IslandToastCard: View {
                 style: .continuous
             )
         )
-        .offset(y: layout.topOffset)
+        .offset(y: layout.topOffset(for: presentation))
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(motion, value: presentation)
         .accessibilityElement(children: .ignore)
@@ -127,7 +127,6 @@ struct IslandToastLabel: View {
                 .opacity(showsDetail ? 1 : 0)
         }
         .padding(.horizontal, 14)
-        .padding(.bottom, 12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 }

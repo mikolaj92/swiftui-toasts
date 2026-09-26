@@ -14,7 +14,8 @@ struct IslandLayoutTests {
             style: .dynamicIsland
         )
 
-        #expect(layout.topOffset == 11)
+        #expect(layout.topOffset(for: .collapsed) == 11)
+        #expect(layout.topOffset(for: .expanded) == 67)
         #expect(layout.collapsedSize == CGSize(width: 120, height: 36))
         #expect(layout.expandedSize == CGSize(width: 382, height: 90))
         #expect(layout.cornerRadius(for: .expanded) == 38)
@@ -29,7 +30,8 @@ struct IslandLayoutTests {
             style: .dynamicIsland
         )
 
-        #expect(layout.topOffset == 14)
+        #expect(layout.topOffset(for: .collapsed) == 14)
+        #expect(layout.topOffset(for: .expanded) == 70)
     }
 
     @Test
@@ -41,8 +43,10 @@ struct IslandLayoutTests {
         #expect(notch.collapsedSize == island.collapsedSize)
         #expect(notch.expandedSize.height == island.expandedSize.height)
         #expect(notch.cornerRadius(for: .expanded) == island.cornerRadius(for: .expanded))
-        #expect(notch.topOffset == 47)
-        #expect(homeButton.topOffset == 20)
+        #expect(notch.topOffset(for: .collapsed) == 47)
+        #expect(notch.topOffset(for: .expanded) == 55)
+        #expect(homeButton.topOffset(for: .collapsed) == 20)
+        #expect(homeButton.topOffset(for: .expanded) == 28)
         #expect(notch.shapeOpacity(for: .compact) == 1)
         #expect(homeButton.shapeOpacity(for: .compact) == 1)
     }
@@ -58,9 +62,9 @@ struct IslandLayoutTests {
         #expect(tv.expandedSize == ipad.expandedSize)
         #expect(mac.expandedSize == ipad.expandedSize)
         #expect(ipad.collapsedSize == phone.collapsedSize)
-        #expect(ipad.topOffset == 24)
-        #expect(tv.topOffset == 60)
-        #expect(mac.topOffset == 11)
+        #expect(ipad.topOffset(for: .expanded) == 32)
+        #expect(tv.topOffset(for: .expanded) == 68)
+        #expect(mac.topOffset(for: .expanded) == 19)
     }
 
     @Test

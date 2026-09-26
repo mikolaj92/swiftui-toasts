@@ -34,6 +34,9 @@ struct IslandLayout: Equatable {
     static let expandedHeight: CGFloat = 90
     static let expandedHorizontalInset: CGFloat = 10
     static let expandedCornerRadius: CGFloat = 38
+    /// Space between the status bar and the expanded card, so the plate does
+    /// not sit on the clock.
+    static let expandedTopGap: CGFloat = 8
     /// Wider than any iPhone. iPad, Apple TV, and Mac keep the phone card
     /// instead of stretching it across the screen.
     static let phoneWidthCeiling: CGFloat = 480
@@ -51,7 +54,18 @@ struct IslandLayout: Equatable {
         return CGSize(width: width, height: Self.expandedHeight)
     }
 
-    var topOffset: CGFloat {
+    /// Collapsed and compact plates stay on the island. The expanded card drops
+    /// below the status bar, with a gap, so it is not stuck to the screen edge.
+    func topOffset(for presentation: IslandPresentation) -> CGFloat {
+        switch presentation {
+        case .expanded:
+            max(collapsedTop, safeAreaTop) + Self.expandedTopGap
+        case .idle, .collapsed, .compact:
+            collapsedTop
+        }
+    }
+
+    private var collapsedTop: CGFloat {
         switch style {
         case .dynamicIsland:
             Self.islandTopInset + max(safeAreaTop - Self.referenceSafeAreaTop, 0)
