@@ -44,6 +44,14 @@ public struct DynamicIslandToast: Identifiable, Equatable, Sendable {
         self.tone = tone
         self.iconURL = iconURL
     }
+
+    func sameMessage(as other: DynamicIslandToast) -> Bool {
+        title == other.title
+            && message == other.message
+            && symbolName == other.symbolName
+            && tone == other.tone
+            && iconURL == other.iconURL
+    }
 }
 
 extension View {
@@ -73,8 +81,10 @@ extension View {
     ///
     /// On iPhone, a toast uses the system Live Activity when
     /// `ActivityAuthorizationInfo` says activities are enabled and the app's
-    /// widget bundle includes ``IslandToastActivity``. Otherwise, and on iPad,
-    /// Mac, and Apple TV, the same card is drawn by this library.
+    /// widget bundle includes ``IslandToastActivity``. Otherwise this library
+    /// draws the island card. iPad uses that card, centered. Mac and Apple TV
+    /// have no public in-app banner, so the library draws a system-style card
+    /// in the upper-right corner. On Apple TV it stays out of the focus engine.
     public func dynamicIslandToasts(
         expanded: Duration = .milliseconds(2200),
         compact: Duration = .milliseconds(1400),
@@ -111,7 +121,7 @@ struct DynamicIslandToastsModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        #if canImport(UIKit) && !os(macOS)
+        #if os(iOS)
             content
                 .environment(center)
                 .background {

@@ -53,6 +53,7 @@
                     window.windowLevel = .alert + 1
                 #endif
                 window.isUserInteractionEnabled = false
+                host.view.isUserInteractionEnabled = false
                 window.rootViewController = host
                 window.isHidden = false
                 self.host = host
@@ -71,8 +72,13 @@
         }
     }
 
-    /// Sits above the status bar. Every touch falls through to the app.
+    /// Sits above the status bar. Every touch falls through to the app, and the
+    /// window never becomes key, so it cannot take the focus system.
     final class PassThroughWindow: UIWindow {
+        override var canBecomeKey: Bool { false }
+
+        override var canBecomeFocused: Bool { false }
+
         override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
             nil
         }

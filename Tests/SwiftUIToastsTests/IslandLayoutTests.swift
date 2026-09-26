@@ -106,6 +106,41 @@ struct IslandLayoutTests {
         #expect(layout.shapeOpacity(for: .compact) == 1)
         #expect(layout.collapsedSize == CGSize(width: 120, height: 36))
     }
+
+    @Test
+    func tvBannerSitsInTheUpperTrailingCorner() {
+        let layout = IslandLayout(
+            containerWidth: 1920,
+            safeAreaTop: 60,
+            style: .banner,
+            safeAreaTrailing: 80
+        )
+
+        #expect(layout.bannerWidth == 640)
+        #expect(layout.bannerTopInset == 60)
+        #expect(layout.bannerTrailingInset == 80)
+        #expect(layout.cornerRadius(for: .expanded) == 30)
+    }
+
+    @Test
+    func macBannerSitsBelowTheTitleBar() {
+        var layout = IslandLayout(containerWidth: 1100, safeAreaTop: 0, style: .banner)
+        layout.bannerWidthLimit = 380
+        layout.bannerTopFloor = 20
+        layout.bannerTrailingFloor = 20
+
+        #expect(layout.bannerTopInset == 20)
+        #expect(layout.bannerTrailingInset == 20)
+        #expect(layout.bannerWidth == 380)
+    }
+
+    @Test
+    func bannerUsesACornerInsetWhenTheSafeAreaIsMissing() {
+        let layout = IslandLayout(containerWidth: 1920, safeAreaTop: 0, style: .banner)
+
+        #expect(layout.bannerTopInset == 60)
+        #expect(layout.bannerTrailingInset == 80)
+    }
 }
 
 @Suite
@@ -180,6 +215,70 @@ struct IslandToastQueueTests {
 
         queue.hideChromeForSystem()
         #expect(queue.finishPause(showsChrome: false) == .none)
+        #expect(queue.current == nil)
+    }
+
+    @Test
+    func eightMessagesPlayInTheOrderTheyArrived() {
+        var queue = IslandToastQueue()
+        let titles = (1...8).map(String.init)
+
+        for title in titles {
+            _ = queue.receive(DynamicIslandToast(title: title))
+        }
+
+        var played: [String] = []
+        while let title = queue.current?.title {
+            played.append(title)
+            _ = queue.expand()
+            _ = queue.fold()
+            _ = queue.rest()
+            if queue.finishPause() == .none { break }
+        }
+
+        #expect(played == titles)
+        #expect(queue.current == nil)
+        #expect(queue.presentation == .idle)
+    }
+
+    @Test
+    func burstPastTheWaitingLimitDropsTheNewest() {
+        var queue = IslandToastQueue()
+
+        for index in 1...12 {
+            _ = queue.receive(DynamicIslandToast(title: String(index)))
+        }
+
+        #expect(queue.current?.title == "1")
+        #expect(queue.pending.map(\.title) == (2...11).map(String.init))
+    }
+
+    @Test
+    func repeatOfAVisibleOrWaitingMessageIsSkipped() {
+        var queue = IslandToastQueue()
+        let saved = DynamicIslandToast(title: "Saved", message: "OK")
+        let again = DynamicIslandToast(title: "Saved", message: "OK")
+        let other = DynamicIslandToast(title: "Copied")
+
+        #expect(queue.receive(saved) == .begin)
+        #expect(queue.receive(again) == .none)
+        #expect(queue.pending.isEmpty)
+
+        #expect(queue.receive(other) == .none)
+        #expect(queue.receive(again) == .none)
+        #expect(queue.pending.map(\.title) == ["Copied"])
+    }
+
+    @Test
+    func bannerDismissLeavesWithoutTheCompactRest() {
+        var queue = IslandToastQueue()
+        _ = queue.receive(DynamicIslandToast(title: "Saved"))
+
+        #expect(queue.expand() == .holdExpanded)
+        #expect(queue.dismiss() == .pause)
+        #expect(queue.presentation == .idle)
+        #expect(queue.current?.title == "Saved")
+        #expect(queue.finishPause() == .none)
         #expect(queue.current == nil)
     }
 }

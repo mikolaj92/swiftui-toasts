@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(iOS)
+    import UIKit
+#endif
 
 /// Owns the toast queue and the island animation. Installed by
 /// ``View/dynamicIslandToasts(expanded:compact:pause:)`` and read from the
@@ -77,6 +80,9 @@ public final class IslandToastCenter {
             Task { await IslandToastLivePresenter.dismiss() }
         }
         while true {
+            if let toast = queue.current {
+                IslandToastFeedback.play(toast.tone)
+            }
             if IslandToastLivePresenter.isEnabled,
                let toast = queue.current,
                await IslandToastLivePresenter.present(toast) {
@@ -85,10 +91,31 @@ public final class IslandToastCenter {
                 await IslandToastLivePresenter.dismiss()
                 try await Task.sleep(for: pause)
                 guard queue.finishPause(showsChrome: !IslandToastLivePresenter.isEnabled) == .begin else {
-                    return
+                    guard queue.current != nil else { return }
+                    continue
                 }
                 continue
             }
+
+            #if os(tvOS) || os(macOS)
+                if queue.presentation != .collapsed {
+                    animatesChanges = false
+                    guard queue.beginChrome() == .begin else { return }
+                }
+                try await Task.sleep(for: .milliseconds(32))
+                animatesChanges = true
+                guard queue.expand() == .holdExpanded else { return }
+                try await Task.sleep(for: expandedHold)
+                guard queue.dismiss() == .pause else { return }
+                try await Task.sleep(for: .milliseconds(350))
+                try await Task.sleep(for: pause)
+                animatesChanges = false
+                guard queue.finishPause(showsChrome: !IslandToastLivePresenter.isEnabled) == .begin else {
+                    guard queue.current != nil else { return }
+                    continue
+                }
+                continue
+            #endif
 
             if queue.presentation != .collapsed {
                 animatesChanges = false
@@ -107,8 +134,24 @@ public final class IslandToastCenter {
             try await Task.sleep(for: pause)
             animatesChanges = false
             guard queue.finishPause(showsChrome: !IslandToastLivePresenter.isEnabled) == .begin else {
-                return
+                guard queue.current != nil else { return }
+                continue
             }
         }
+    }
+}
+
+enum IslandToastFeedback {
+    static func play(_ tone: IslandToastTone) {
+        #if os(iOS)
+            switch tone {
+            case .success:
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            case .failure:
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
+            case .neutral:
+                break
+            }
+        #endif
     }
 }

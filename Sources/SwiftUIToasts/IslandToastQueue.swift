@@ -1,6 +1,10 @@
 import Foundation
 
 struct IslandToastQueue: Equatable {
+    /// Waiting messages, not counting the one on screen. Extra arrivals are
+    /// dropped so a burst cannot pin the island for minutes.
+    static let waitingLimit = 10
+
     private(set) var pending: [DynamicIslandToast] = []
     private(set) var current: DynamicIslandToast?
     private(set) var presentation: IslandPresentation = .idle
@@ -10,6 +14,7 @@ struct IslandToastQueue: Equatable {
         _ toast: DynamicIslandToast,
         showsChrome: Bool = true
     ) -> IslandToastCue {
+        guard !isDuplicate(toast), pending.count < Self.waitingLimit else { return .none }
         pending.append(toast)
         return promote(showsChrome: showsChrome)
     }
@@ -24,6 +29,15 @@ struct IslandToastQueue: Equatable {
         guard presentation == .expanded else { return .none }
         presentation = .compact
         return .holdCompact
+    }
+
+    /// Leaves the expanded card without the island's compact rest. Used by the
+    /// Apple TV banner, which slides away instead of folding into a capsule.
+    mutating func dismiss() -> IslandToastCue {
+        guard presentation == .expanded else { return .none }
+        presentation = .idle
+        coolingDown = true
+        return .pause
     }
 
     mutating func rest() -> IslandToastCue {
@@ -51,6 +65,11 @@ struct IslandToastQueue: Equatable {
         guard current != nil else { return .none }
         presentation = .collapsed
         return .begin
+    }
+
+    private func isDuplicate(_ toast: DynamicIslandToast) -> Bool {
+        if let current, current.sameMessage(as: toast) { return true }
+        return pending.contains { $0.sameMessage(as: toast) }
     }
 
     private mutating func promote(showsChrome: Bool) -> IslandToastCue {

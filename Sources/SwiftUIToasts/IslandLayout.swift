@@ -7,6 +7,9 @@ import Foundation
 enum IslandChromeStyle: Equatable {
     case dynamicIsland
     case statusBar
+    /// Apple TV has no in-app banner API, so the card sits where a system
+    /// notification does: the upper trailing corner.
+    case banner
 }
 
 enum IslandPresentation: Equatable {
@@ -24,6 +27,7 @@ struct IslandLayout: Equatable {
     var containerWidth: CGFloat
     var safeAreaTop: CGFloat
     var style: IslandChromeStyle
+    var safeAreaTrailing: CGFloat = 0
 
     /// Measured on the phones in the reference: the cutout is 36pt tall and
     /// starts 11pt below the screen edge when the top safe area is 59.
@@ -36,16 +40,43 @@ struct IslandLayout: Equatable {
     static let expandedContentGap: CGFloat = 6
     static let expandedHorizontalInset: CGFloat = 10
     static let expandedCornerRadius: CGFloat = 38
-    /// Wider than any iPhone. iPad, Apple TV, and Mac keep the phone card
-    /// instead of stretching it across the screen.
+    /// Wider than any iPhone. iPad and Mac keep the phone card instead of
+    /// stretching it across the screen.
     static let phoneWidthCeiling: CGFloat = 480
     static let regularExpandedWidth: CGFloat = 420
+    /// Upper-trailing card on a 1920-point Apple TV canvas.
+    static let bannerMaximumWidth: CGFloat = 640
+    static let bannerCornerRadius: CGFloat = 30
+    static let bannerMinimumTop: CGFloat = 60
+    static let bannerMinimumTrailing: CGFloat = 80
 
     var collapsedSize: CGSize {
         CGSize(width: Self.islandWidth, height: Self.islandHeight)
     }
 
+    /// Defaults match an Apple TV canvas. Mac passes a shorter card and a
+    /// smaller inset so the banner stays clear of the title bar.
+    var bannerWidthLimit: CGFloat = Self.bannerMaximumWidth
+    var bannerTopFloor: CGFloat = Self.bannerMinimumTop
+    var bannerTrailingFloor: CGFloat = Self.bannerMinimumTrailing
+
+    var bannerWidth: CGFloat {
+        let available = containerWidth - bannerTrailingInset - bannerTrailingFloor
+        return min(bannerWidthLimit, max(available, 0))
+    }
+
+    var bannerTopInset: CGFloat {
+        max(safeAreaTop, bannerTopFloor)
+    }
+
+    var bannerTrailingInset: CGFloat {
+        max(safeAreaTrailing, bannerTrailingFloor)
+    }
+
     var expandedSize: CGSize {
+        if style == .banner {
+            return CGSize(width: bannerWidth, height: Self.expandedHeight)
+        }
         let edgeToEdge = containerWidth - (Self.expandedHorizontalInset * 2)
         let width = containerWidth > Self.phoneWidthCeiling
             ? min(edgeToEdge, Self.regularExpandedWidth)
@@ -61,6 +92,8 @@ struct IslandLayout: Equatable {
             max(Self.islandHeight, safeAreaTop - topOffset) + Self.expandedContentGap
         case .statusBar:
             14
+        case .banner:
+            0
         }
     }
 
@@ -70,6 +103,8 @@ struct IslandLayout: Equatable {
             Self.islandTopInset + max(safeAreaTop - Self.referenceSafeAreaTop, 0)
         case .statusBar:
             max(safeAreaTop, Self.islandTopInset)
+        case .banner:
+            bannerTopInset
         }
     }
 
@@ -91,11 +126,14 @@ struct IslandLayout: Equatable {
     }
 
     func cornerRadius(for presentation: IslandPresentation) -> CGFloat {
+        if style == .banner {
+            return Self.bannerCornerRadius
+        }
         switch presentation {
         case .expanded:
-            Self.expandedCornerRadius
+            return Self.expandedCornerRadius
         case .idle, .collapsed, .compact:
-            size(for: presentation).height / 2
+            return size(for: presentation).height / 2
         }
     }
 
@@ -106,7 +144,7 @@ struct IslandLayout: Equatable {
         switch (style, presentation) {
         case (_, .idle):
             0
-        case (.dynamicIsland, .compact):
+        case (.dynamicIsland, .compact), (.banner, .compact):
             0
         case (_, .collapsed), (_, .expanded), (.statusBar, .compact):
             1

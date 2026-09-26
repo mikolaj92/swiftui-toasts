@@ -61,9 +61,21 @@ struct HomeView: View {
 }
 ```
 
-Messages play one at a time. The card stays expanded for 2.2 seconds, folds for 1.4 seconds, then waits 1 second before the next one. Pass different durations to `.dynamicIslandToasts(expanded:compact:pause:)`.
+Messages play one at a time, in the order they were sent. The card stays expanded for 2.2 seconds, folds for 1.4 seconds, then waits 1 second before the next one. Pass different durations to `.dynamicIslandToasts(expanded:compact:pause:)`.
 
-iPad, Mac, and Apple TV use that same card, centered at the top, at phone width.
+Up to 10 messages can wait behind the one on screen. A later arrival is skipped when that line is full, and so is a repeat of a message already showing or already waiting.
+
+iPad uses that same card, centered at the top, at phone width. On iPhone, success and failure play a short haptic.
+
+![Toast centered on iPad](docs/ipad-toast.png)
+
+On Mac the card sits in the upper-right corner of the window, below the title bar. It stays for the expanded time, then slides away.
+
+![Toast in the upper-right corner on Mac](docs/mac-toast.png)
+
+Apple TV has no public API for an in-app banner. `UNNotificationPresentationOptionBanner` only presents a notification the system has already delivered, and showing one asks for notification permission. The library draws its own card in the upper-right corner, where a system banner sits, and keeps it out of the focus engine. The card stays for the expanded time, then slides away. There is no compact fold on Apple TV.
+
+![Toast in the upper-right corner on Apple TV](docs/tv-toast.png)
 
 ## System Dynamic Island
 
